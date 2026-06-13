@@ -1,0 +1,7 @@
+[
+	{ "Name": "Part_BasicHead",    "Slot": "Head",  "Rarity": "Common", "StatModifiers": { "Health": 5,  "Attack": 2, "Defense": 1,  "Speed": 1 } },
+	{ "Name": "Part_BasicTorso",   "Slot": "Torso", "Rarity": "Common", "StatModifiers": { "Health": 20, "Attack": 0, "Defense": 5,  "Speed": 0 } },
+	{ "Name": "Part_ArmoredShell", "Slot": "Torso", "Rarity": "Rare",   "StatModifiers": { "Health": 30, "Attack": 0, "Defense": 15, "Speed": -3 } },
+	{ "Name": "Part_BasicLimbs",   "Slot": "Limbs", "Rarity": "Common", "StatModifiers": { "Health": 0,  "Attack": 4, "Defense": 2,  "Speed": 6 } },
+	{ "Name": "Part_BasicTail",    "Slot": "Tail",  "Rarity": "Common", "StatModifiers": { "Health": 2,  "Attack": 3, "Defense": 0,  "Speed": 4 } }
+]

@@ -1,0 +1,5 @@
+[
+	{ "Name": "Mut_Hardy",          "ChancePermille": 250, "Rarity": "Uncommon", "AffectedType": "Stat",    "Effect": { "Health": 10, "Attack": 0, "Defense": 0, "Speed": 0 } },
+	{ "Name": "Mut_Bioluminescent", "ChancePermille": 60,  "Rarity": "Rare",     "AffectedType": "Visual",  "Effect": { "Health": 0,  "Attack": 0, "Defense": 0, "Speed": 0 } },
+	{ "Name": "Mut_ApexInstinct",   "ChancePermille": 10,  "Rarity": "Epic",     "AffectedType": "Special", "Effect": { "Health": 0,  "Attack": 8, "Defense": 0, "Speed": 4 } }
+]

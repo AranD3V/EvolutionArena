@@ -1,0 +1,30 @@
+# Unreal Engine generated folders
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Visual Studio / Rider / IDE
+.vs/
+.idea/
+*.VC.db
+*.VC.opendb
+*.opensdf
+*.opendb
+*.sdf
+*.sln
+*.suo
+*.user
+*.xcodeproj
+*.xcworkspace
+
+# Generated project files
+EvolutionArena.sln
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Tooling (local only)
+.code-review-graph/

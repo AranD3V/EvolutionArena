@@ -1,0 +1,6 @@
+[
+	{ "Name": "Gene_Vigor",    "Type": "Stat", "Dominance": "Dominant",   "StatMapping": { "Health": 4, "Attack": 0, "Defense": 0, "Speed": 0 } },
+	{ "Name": "Gene_Ferocity", "Type": "Stat", "Dominance": "Dominant",   "StatMapping": { "Health": 0, "Attack": 3, "Defense": 0, "Speed": 0 } },
+	{ "Name": "Gene_Carapace", "Type": "Stat", "Dominance": "Recessive",  "StatMapping": { "Health": 0, "Attack": 0, "Defense": 3, "Speed": 0 } },
+	{ "Name": "Gene_Swift",    "Type": "Stat", "Dominance": "Codominant", "StatMapping": { "Health": 0, "Attack": 0, "Defense": 0, "Speed": 2 } }
+]

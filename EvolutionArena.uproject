@@ -1,0 +1,21 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.6",
+	"Category": "",
+	"Description": "Evolution Arena — mobile creature-breeding auto-battler.",
+	"Modules": [
+		{
+			"Name": "EvolutionArena",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"CoreUObject"
+			]
+		}
+	],
+	"TargetPlatforms": [
+		"Windows",
+		"Android"
+	]
+}
