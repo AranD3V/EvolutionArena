@@ -309,14 +309,14 @@ Watch battles between other players.
 
 # 9. Open Questions
 
-* [ ] Should battles be simulated client-side or server-side?
-* [ ] How many mutations should exist at launch?
-* [ ] What is the ideal breeding cooldown?
-* [ ] How should rarity be calculated?
-* [ ] What should be the maximum creature level?
-* [ ] Should ranked battles be asynchronous?
-* [ ] Is a marketplace required before launch?
-* [ ] How many creature parts should be available in MVP?
+* [x] Should battles be simulated client-side or server-side? — **Client-side deterministic sim for MVP**; server re-validation post-MVP. (TechSpec §7)
+* [ ] How many mutations should exist at launch? — *(content TBD; 3 seeded so far)*
+* [x] What is the ideal breeding cooldown? — **4h MVP default** (`BreedCooldownHours`), tunable.
+* [x] How should rarity be calculated? — **Σ part rarities + 2×mutations → thresholds** (MVP). (TechSpec §7)
+* [ ] What should be the maximum creature level? — *(open; XP→level curve is linear, no cap yet)*
+* [x] Should ranked battles be asynchronous? — **Yes, async vs opponent snapshots ("ghosts")**. (TechSpec §7)
+* [ ] Is a marketplace required before launch? — *(no; Won't-Have for V1)*
+* [ ] How many creature parts should be available in MVP? — *(content TBD; 5 seeded so far)*
 
 ---
 

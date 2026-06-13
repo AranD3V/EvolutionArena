@@ -263,6 +263,42 @@ submitted to EOS Stats, rating updated, leaderboard refreshed.
   mutations don't yet affect stats); damage constants and `MaxRounds`/miss-chance are
   candidates for config. Square the model up as content/AI depth grows.
 
+### Online behind an abstract service; integer ranked rating
+
+- **Context:** Ranked needs rating, opponent selection, and standings — but EOS isn't
+  wired (no creds yet), and `rules.md` requires all online access to go through
+  wrapper interfaces so the game runs offline in-editor and the backend can be swapped.
+- **Decision:** An abstract `ULeaderboardService` (`SubmitResult` / `SelectOpponent` /
+  `GetTopEntries`) is the single online boundary. `ULocalLeaderboardService` (in-memory,
+  deterministic) backs dev/offline/tests now; the EOS-backed subclass is the *only*
+  thing that changes to go live. Ranked is **async vs stored `FOpponentSnapshot`
+  ghosts** (matches the async-ranked decision above). Rating is **integer Elo-like**
+  (`URankingLibrary`, no floats): `Delta = K·(Score‰ − Expected‰)/1000`. Match
+  orchestration (`URankedArenaLibrary::RunRankedMatch`) is pure logic over the interface.
+- **Alternatives considered:** Calling EOS directly from gameplay (rejected — violates
+  the interface rule, blocks offline/tests); float Elo (rejected — float divergence,
+  inconsistent with the integer-only ethos).
+- **Trade-offs:** Local selection is simple (closest rating); the rating curve is an MVP
+  approximation with tunable constants. The EOS implementation (auth, Stats,
+  Leaderboards) is deferred until credentials exist — but the boundary is set, so it
+  drops in behind the existing interface.
+
+### Progression & economy: derived level, data-driven unlocks, breeding sink
+
+- **Context:** Ranked results need to *reward* the player and breeding needs to *cost*
+  something, forming an earn/spend loop over `FPlayerSave`.
+- **Decision:** `UProgressionLibrary` (integer): a ranked result grants XP + soft
+  currency (win > loss); **Level is derived** from total `Xp` (`1 + Xp/XpPerLevel`) and
+  recomputed on award; unlocks are **data-driven** (`FProgressionUnlockDef` rows keyed
+  by unlock id with a `RequiredLevel`) and accumulate on `FPlayerSave.EvolutionUnlocks`.
+  The spend side is the **breeding transaction** (`UBreedingLibrary::CanBreed`/`CommitBreed`):
+  `BreedCost = 50` deducted, `BreedCooldown = 4h` stamped on both parents. Defaults are
+  named constants / config candidates. Resolves the PRD breeding-cooldown question.
+- **Alternatives considered:** storing Level independently of XP (rejected — risk of
+  drift; derive it); hardcoded unlock rules in C++ (rejected — data-driven balance rule).
+- **Trade-offs:** Reward/cost/cooldown numbers are untuned MVP placeholders; the XP
+  curve is linear (no soft cap yet); a real max-level/prestige model is future work.
+
 ## 8. Non-functional requirements
 
 - **Performance:** 60 FPS on mid-range Android and on Windows desktop, with two

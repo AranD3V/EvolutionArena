@@ -99,9 +99,13 @@ erDiagram
 |---|---|---|---|---|
 | `PlayerId` | FString | not empty | EOS account id | Identity from EOS |
 | `DisplayName` | FString | | "" | Player-chosen name |
-| `Level` | int32 | ≥ 1 | 1 | Progression level |
+| `Level` | int32 | ≥ 1 | 1 | Progression level (derived from `Xp`) |
+| `Xp` | int32 | ≥ 0 | 0 | Total accumulated XP (additive field) |
 | `SoftCurrency` | int32 | ≥ 0 | 0 | Earned currency |
 | `PremiumCurrency` | int32 | ≥ 0 | 0 | Future monetization (not MVP-spent) |
+| `RankedRating` | int32 | | 1000 | Elo-like ranked rating (additive field) |
+| `Wins` | int32 | ≥ 0 | 0 | Ranked wins |
+| `Losses` | int32 | ≥ 0 | 0 | Ranked losses |
 | `Creatures` | TArray\<FCreature\> | | [] | Owned collection |
 | `EvolutionUnlocks` | TArray\<FName\> | | [] | Unlocked branches/species |
 | `SaveVersion` | int32 | ≥ 1 | 1 | Drives migration |
@@ -179,6 +183,15 @@ Row's **FName key is the mutation id** (recorded on `FGenome.Mutations` when it 
 | `Effect` | FStatBlock | | zero | Reserved — stat-affecting mutations (not applied yet) |
 | `AffectedType` | EGeneType | | Special | Reserved — target gene category |
 
+### `FProgressionUnlockDef : FTableRowBase` (DataTable row — static, implemented)
+
+Row's **FName key is the unlock id** (added to `FPlayerSave.EvolutionUnlocks` when the
+player reaches the level). Content gates by checking that set.
+
+| Field | Type | Constraints | Default | Notes |
+|---|---|---|---|---|
+| `RequiredLevel` | int32 | ≥ 1 | 1 | Player level at which the unlock is granted |
+
 ### `FBattleResult` / `FBattleEvent` / `FBattleCombatant` (runtime, implemented)
 
 The battle sim is pure logic with no rendering dependency: it returns an
@@ -201,14 +214,17 @@ Action`, `bool bMissed`, `int32 Damage`, `int32 TargetHealthAfter`.
 | `Outcome` | EBattleOutcome | | | CombatantAWon / CombatantBWon / Draw |
 | `RatingDelta` | int32 | | | Applied to rank |
 
-### `RankEntry` (EOS Stats/Leaderboard — backend)
+### `FOpponentSnapshot` / `FRankEntry` (Online, implemented)
 
-| Field | Type | Notes |
-|---|---|---|
-| `PlayerId` | string | EOS account id (sort/lookup key) |
-| `Rating` | int32 | Leaderboard sort key |
-| `Wins` / `Losses` | int32 | Aggregated stats |
-| `SnapshotRef` | string | Pointer to opponent loadout snapshot |
+Served through the abstract `ULeaderboardService` (local impl now; EOS impl later).
+A **snapshot** is a stored opponent ("ghost") the player battles asynchronously.
+
+**`FOpponentSnapshot`** — `FString PlayerId`, `int32 Rating`, `FCreature Loadout`.
+**`FRankEntry`** (one leaderboard standing) — `FString PlayerId`, `int32 Rating`
+(sort key), `int32 Wins`, `int32 Losses`.
+
+> The EOS-backed implementation maps these to EOS Stats/Leaderboards; the local
+> implementation keeps them in memory. Gameplay code only sees the structs + interface.
 
 ## 4. Relationships
 

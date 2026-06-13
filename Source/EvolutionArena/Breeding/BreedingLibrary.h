@@ -8,6 +8,7 @@
 #include "Genetics/EvoGeneticsTypes.h"
 #include "Genetics/Genome.h"
 #include "Creature/Creature.h"
+#include "Save/PlayerSave.h"
 #include "BreedingLibrary.generated.h"
 
 class UDataTable;
@@ -42,4 +43,26 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Breeding")
 	static FCreature BreedCreatures(const FCreature& ParentA, const FCreature& ParentB, int32 Seed,
 		const UDataTable* GeneTable, const UDataTable* PartTable, const UDataTable* MutationTable);
+
+	// ---- Breeding transaction (cooldown + cost) ----
+
+	static constexpr int32 BreedCost = 50;        // soft currency per breed (MVP default)
+	static constexpr int32 BreedCooldownHours = 4; // resolves the PRD breeding-cooldown question
+
+	/**
+	 * Can these two parents breed right now? Both must be off-cooldown and distinct,
+	 * and the player must afford BreedCost. OutReason explains a failure.
+	 */
+	static bool CanBreed(const FCreature& ParentA, const FCreature& ParentB, const FPlayerSave& Save,
+		const FDateTime NowUtc, FString& OutReason);
+
+	/**
+	 * Perform a breed transaction against the player's save: locate the parents by id,
+	 * validate via CanBreed, deduct cost, start both parents' cooldown, produce the
+	 * offspring (BreedCreatures), and add it to the collection. False (no changes) if
+	 * a parent is missing or the breed is gated.
+	 */
+	static bool CommitBreed(FPlayerSave& Save, const FGuid& ParentAId, const FGuid& ParentBId, int32 Seed,
+		const UDataTable* GeneTable, const UDataTable* PartTable, const UDataTable* MutationTable,
+		const FDateTime NowUtc, FCreature& OutOffspring);
 };

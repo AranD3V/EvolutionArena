@@ -45,8 +45,9 @@ DataTables; protect battle determinism with tests from day one.
   - *Depends on:* nothing
   - *Acceptance:* Project opens, builds, runs to an empty hub.
   - *Done 2026-06-13:* `.uproject` + `Source/` primary module + `Config/` + `.gitignore`;
-    editor target compiles clean against UE 5.6; VS solution generates. (Editor GUI
-    launch / empty level pending a manual open; `git init` still to do.)
+    editor target compiles clean against UE 5.6; VS solution generates; `git init` done.
+    Editor GUI now opens clean (2026-06-14) via the explicit `D:\UE_5.6` path — empty
+    default level, no project `Content/` yet (first runnable map is the next M0 step).
 - [ ] **Windows build** — Win64 (x86-64, D3D12) packaging; runs to the empty hub.
   - *Depends on:* Project skeleton
   - *Acceptance:* Windows build launches and reaches the hub (fastest test surface
@@ -109,8 +110,11 @@ DataTables; protect battle determinism with tests from day one.
   - *Acceptance:* Deterministic rarity for a given genome (formula per open question).
   - *Done 2026-06-14:* `UBreedingLibrary::CalculateRarity` = `Σ part rarities +
     2×mutations`, thresholds → tiers (MVP default for the PRD open question).
-- [ ] **Cooldowns + cost** — breeding gates on cooldown/currency.
+- [x] **Cooldowns + cost** — breeding gates on cooldown/currency.
   - *Acceptance:* Off-cooldown check enforced; cost deducted.
+  - *Done 2026-06-14:* `UBreedingLibrary::CanBreed`/`CommitBreed` — distinct parents,
+    off-cooldown, affordable; deducts `BreedCost=50`, stamps `BreedCooldown=4h` on both
+    parents, adds offspring to the save. 2 tests pass. (Resolves the PRD cooldown question.)
 - [ ] **Breeding & reveal UI** — select parents, animate offspring + mutation reveal.
   - *Depends on:* Breeding, Mutation, Save
   - *Acceptance:* Full breed flow works end to end and persists offspring.
@@ -138,13 +142,23 @@ DataTables; protect battle determinism with tests from day one.
 - [ ] **EOS cloud save** — sync `FPlayerSave` with conflict resolution.
   - *Depends on:* Local Save, EOS shell
   - *Acceptance:* Save round-trips to cloud; newest-valid-wins; backup kept.
-- [ ] **Ranked arena (snapshots)** — opponent selection by rating, submit result.
+- [x] **Ranked arena (snapshots)** — opponent selection by rating, submit result.
   - *Depends on:* Battle sim, EOS
   - *Acceptance:* Player runs a ranked match vs a snapshot; result recorded.
-- [ ] **EOS leaderboards + rating** — rating stat, ladder query.
+  - *Done 2026-06-14:* `URankedArenaLibrary::RunRankedMatch` (`Online/`) ties opponent
+    selection → `SimulateBattle` → rating update → submit, all via the abstract
+    `ULeaderboardService` (local impl now, EOS later). 3 tests pass. (See TechSpec §7.)
+- [~] **EOS leaderboards + rating** — rating stat, ladder query.
   - *Acceptance:* Rating updates after matches; leaderboard reflects standings.
-- [ ] **Progression system** — player level, evolution unlocks, currency sinks.
+  - *Done 2026-06-14:* rating math (`URankingLibrary`, integer Elo-like) + service
+    interface (`SelectOpponent`/`SubmitResult`/`GetTopEntries`) + `ULocalLeaderboardService`.
+    **Pending:** the EOS-backed `ULeaderboardService` implementation (blocked on creds).
+- [x] **Progression system** — player level, evolution unlocks, currency sinks.
   - *Acceptance:* Wins/breeding advance progression; unlocks gate content.
+  - *Done 2026-06-14:* `UProgressionLibrary` (`Progression/`) — XP→level curve,
+    ranked XP/coin rewards, data-driven level-gated unlocks (`FProgressionUnlockDef`
+    + `Data/DT_Unlocks.json`). Currency sink is the breeding cost above. 2 tests pass.
+    (UI to surface progression is editor-bound, pending.)
 - [ ] **Onboarding + tutorial battle** — starter creature, scripted first win.
   - *Depends on:* Creation, Battle
   - *Acceptance:* New player reaches hub owning one creature, having won once.

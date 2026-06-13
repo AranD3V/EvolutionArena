@@ -140,3 +140,55 @@ FCreature UBreedingLibrary::BreedCreatures(const FCreature& ParentA, const FCrea
 	Child.Name = TEXT("Offspring");
 	return Child;
 }
+
+bool UBreedingLibrary::CanBreed(const FCreature& ParentA, const FCreature& ParentB, const FPlayerSave& Save,
+	const FDateTime NowUtc, FString& OutReason)
+{
+	if (ParentA.CreatureId == ParentB.CreatureId)
+	{
+		OutReason = TEXT("A creature cannot breed with itself.");
+		return false;
+	}
+	if (!ParentA.IsOffCooldown(NowUtc) || !ParentB.IsOffCooldown(NowUtc))
+	{
+		OutReason = TEXT("A parent is still on breeding cooldown.");
+		return false;
+	}
+	if (Save.SoftCurrency < BreedCost)
+	{
+		OutReason = FString::Printf(TEXT("Not enough currency (need %d)."), BreedCost);
+		return false;
+	}
+
+	OutReason.Reset();
+	return true;
+}
+
+bool UBreedingLibrary::CommitBreed(FPlayerSave& Save, const FGuid& ParentAId, const FGuid& ParentBId, int32 Seed,
+	const UDataTable* GeneTable, const UDataTable* PartTable, const UDataTable* MutationTable,
+	const FDateTime NowUtc, FCreature& OutOffspring)
+{
+	const int32 IndexA = Save.Creatures.IndexOfByPredicate([&](const FCreature& C) { return C.CreatureId == ParentAId; });
+	const int32 IndexB = Save.Creatures.IndexOfByPredicate([&](const FCreature& C) { return C.CreatureId == ParentBId; });
+	if (IndexA == INDEX_NONE || IndexB == INDEX_NONE)
+	{
+		return false; // a parent isn't in the collection
+	}
+
+	FString Reason;
+	if (!CanBreed(Save.Creatures[IndexA], Save.Creatures[IndexB], Save, NowUtc, Reason))
+	{
+		return false; // gated — no state changes
+	}
+
+	// Produce the offspring first (reads the parent genomes), then mutate state.
+	OutOffspring = BreedCreatures(Save.Creatures[IndexA], Save.Creatures[IndexB], Seed, GeneTable, PartTable, MutationTable);
+
+	Save.SoftCurrency -= BreedCost;
+	const FDateTime CooldownUntil = NowUtc + FTimespan::FromHours(BreedCooldownHours);
+	Save.Creatures[IndexA].BreedCooldownUntil = CooldownUntil;
+	Save.Creatures[IndexB].BreedCooldownUntil = CooldownUntil;
+
+	Save.Creatures.Add(OutOffspring);
+	return true;
+}

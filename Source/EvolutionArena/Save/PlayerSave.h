@@ -27,11 +27,25 @@ struct FPlayerSave
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Save")
 	int32 Level = 1;
 
+	/** Total accumulated XP; Level is derived from this (see UProgressionLibrary). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Save")
+	int32 Xp = 0;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Save")
 	int32 SoftCurrency = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Save")
 	int32 PremiumCurrency = 0;
+
+	// Ranked stats (additive — old saves default these via the tagged SaveGame archive).
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Save|Ranked")
+	int32 RankedRating = 1000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Save|Ranked")
+	int32 Wins = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Save|Ranked")
+	int32 Losses = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Save")
 	TArray<FCreature> Creatures;

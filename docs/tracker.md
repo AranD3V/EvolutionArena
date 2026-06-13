@@ -23,31 +23,34 @@
 
 | Task | Status | Notes |
 |---|---|---|
-| Phase 3 — Battle sim + Creature AI | done | `UBattleSimulator`/`UBattleAI`; deterministic, integer, seeded; **determinism gate passes**; 4 tests **pass** |
+| Phase 4 progression + Phase 2 breeding transaction | done | `UProgressionLibrary` (XP/level/unlocks) + `CanBreed`/`CommitBreed` (cost+cooldown); 4 tests **pass** |
 | Phase 1 — DataTables for parts & genes | partial | Row structs + seed JSON + `ValidateGenome` done; **pending** `.uasset` import in-editor + startup validation |
 | Phase 1 — Creature Assembly + Lab UI | todo | Editor-bound (UMG widgets) — needs an in-editor session; not headless-buildable |
-| Resolve PRD open questions into default decisions | todo | Cooldown, max level, client vs server battles (rarity/mutation/battle-model now have MVP defaults) |
+| Resolve PRD open questions into default decisions | mostly | Resolved: rarity, mutation, battle model, rating, **breeding cooldown (4h)**. Open: max level/prestige, client-vs-server battles |
 
 ## Next up
 
 - [ ] Phase 2 — Breeding transaction: cooldown gate (`FCreature::IsOffCooldown`) + currency cost (`FPlayerSave`) — unblocked, small C++
-- [ ] Phase 4 — Ranked arena: wire `SimulateBattle` to opponent selection + result → rating (EOS parts blocked on creds; matchmaking logic is headless)
+- [ ] Phase 4 — Progression: player level/XP, evolution unlocks, currency sinks (touches `FPlayerSave`) — unblocked, headless
+- [ ] M0 — CI determinism harness (script around build + `Automation RunTests`) — unblocked (scriptable)
 - [ ] Phase 1 — Creature Assembly + Lab UI (live stat preview) — **editor-bound (UMG)**
 - [ ] Phase 1 — Import seed JSON → `DT_*` `.uasset`s + startup validation (editor step)
 - [ ] M0 — Windows packaging → runs to the hub — needs a startup map (editor)
-- [ ] M0 — CI determinism harness (script around build + `Automation RunTests`) — unblocked (scriptable)
-- [ ] M0 — Android packaging + device — blocked on device · M0 — EOS shell — blocked on credentials
+- [ ] M0 — Android packaging + device — blocked on device · EOS impl/shell — blocked on credentials
 
-> Note: the **entire deterministic gameplay core is now built & tested headless** —
-> genetics → breeding → mutation → rarity → battle sim → save (16/16 tests, incl. the
-> battle determinism gate). Remaining unblocked CLI work is thinner: the breeding
-> transaction (small), arena matchmaking logic, and a CI script. The big pieces left
-> are **editor-bound** (Lab UI, asset import, packaging) or **blocked** (device, EOS).
+> Note: deterministic gameplay core + ranked loop are built & tested headless —
+> genetics → breeding → mutation → rarity → battle → save → **ranked match/rating**
+> (19/19 tests, incl. the battle determinism gate). The **online boundary is now set**
+> (`ULeaderboardService`), so EOS drops in behind it later. Remaining unblocked CLI
+> work: breeding transaction, progression, a CI script. The rest is **editor-bound**
+> (Lab UI, asset import, packaging) or **blocked** (device, EOS creds).
 
 ## Done
 
 > Append completed tasks here (most recent first) so progress is visible.
 
+- [x] [2026-06-14] Phase 4 progression + Phase 2 breeding transaction: `UProgressionLibrary` (`Progression/`) — XP→level curve, ranked XP/coin rewards, data-driven level-gated unlocks (`FProgressionUnlockDef` + `Data/DT_Unlocks.json`); added `FPlayerSave.Xp`. `UBreedingLibrary::CanBreed`/`CommitBreed` — distinct/off-cooldown/affordable gate, deduct `BreedCost=50`, stamp `BreedCooldown=4h`, add offspring. Resolves the PRD breeding-cooldown question. 4 tests pass (Progression.XpAndLevel/Unlocks, Breeding.Transaction.CanBreed/Commit). Full suite 23/23.
+- [x] [2026-06-14] Phase 4 (core) — Ranked arena: `URankedArenaLibrary::RunRankedMatch` + `URankingLibrary` (integer Elo-like) + abstract `ULeaderboardService` (`SubmitResult`/`SelectOpponent`/`GetTopEntries`) + `ULocalLeaderboardService` (`Online/`). Added ranked fields to `FPlayerSave`. Online-behind-interface boundary established (EOS impl deferred). 3 tests pass: RatingDelta, OpponentSelection, RankedMatch. Full suite 19/19. Also: set `bUseUnity=false` (test helpers with shared names collided under unity).
 - [x] [2026-06-14] Phase 3 — Battle sim + Creature AI: `UBattleSimulator::SimulateBattle` + `UBattleAI::ChooseAction` + battle types (`Battle/`). Turn-based by Speed, integer damage, seeded `FRandomStream` Heavy-miss roll, `MaxRounds` cap, `FBattleResult` timeline (no render dep). Deterministic — **release gate test passes**. 4 tests pass: Determinism, StatsDecide, Termination, AIGoesForKill. Full suite 16/16.
 - [x] [2026-06-14] Phase 2 — Breeding + Mutation + Rarity: `UBreedingLibrary` (`BreedGenomes`/`BreedCreatures`/`CalculateRarity`) + `UMutationLibrary::RollMutations` + `FMutationDef` (`Breeding/`, `Genetics/GeneticsRows.h`) + seed JSON. Deterministic seeded `FRandomStream`, stable draw order, integer per-mille. 4 tests pass: Inheritance, Determinism, MutationRate, Rarity. Full suite 12/12.
 - [x] [2026-06-14] Phase 1 — Local Save subsystem: `USaveSubsystem` (GameInstance subsystem) + `UEvoSaveGame`/`FPlayerSave` (`Save/`). Atomic temp→rename writes, `MigrateIfNeeded` version hook, tagged SaveGame archive. 3 tests pass: RoundTrip, AtomicWrite, Migration. (Done before Lab UI — UMG is editor-bound; Save only needs the data structs.)
@@ -65,7 +68,7 @@
 |---|---|---|---|
 | EOS product/credentials not yet set up | M0 EOS integration | Owner | 2026-06-13 |
 | No representative mid-range Android test device confirmed | M0 Android *perf* validation only (Windows now covers functional/UX testing) | Owner | 2026-06-13 |
-| Launcher registry maps engine `5.6` → `C:\UE_5.6` but it's installed at `D:\UE_5.6` | Double-clicking the `.uproject` (CLI builds unaffected) | Owner | 2026-06-13 |
+| Launcher registry maps engine `5.6` → `C:\UE_5.6` but it's installed at `D:\UE_5.6` | Double-clicking the `.uproject` only — **workaround confirmed 2026-06-14:** launch `D:\UE_5.6\Engine\Binaries\Win64\UnrealEditor.exe <uproject>` (GUI editor opens clean, ~25s to editor; CLI builds also unaffected) | Owner | 2026-06-13 |
 
 ---
 
@@ -74,6 +77,20 @@
 > Append-only. Record decisions made during the build, with enough context that
 > they don't get re-debated. Bigger architectural decisions also go in
 > `TechSpec.md`.
+
+- **2026-06-14** Progression/economy: **Level derived from `Xp`** (`1 + Xp/100`),
+  ranked rewards (win > loss), **data-driven level-gated unlocks** (`FProgressionUnlockDef`).
+  Breeding sink: `BreedCost=50` + `BreedCooldown=4h` (resolves PRD cooldown question).
+  All integer; numbers are untuned MVP placeholders. (See TechSpec §7.)
+- **2026-06-14** Online behind an abstract **`ULeaderboardService`** (local impl now,
+  EOS subclass later — the only thing that changes to go live); ranked is async vs
+  stored `FOpponentSnapshot` ghosts; rating is **integer Elo-like** (`URankingLibrary`,
+  no floats). Realizes the rules.md "online behind interfaces" rule. (See TechSpec §7.)
+- **2026-06-14** **`bUseUnity = false`** for the module: automation-test files reuse
+  short file-local helper names (`MakePartTable`, `MakeFighter`…) in anonymous
+  namespaces, which unity builds merge → collisions. Module is small, so per-file TUs
+  are fine. (Alternative if unity is wanted later: uniquely-named namespaces / a shared
+  test-helper header.)
 
 - **2026-06-13** Living docs live in **`docs/`**; `CLAUDE.md` stays at the repo
   root (where Claude Code auto-loads it). All CLAUDE.md paths and the
@@ -138,6 +155,9 @@
 
 > Brief, dated summary of notable changes shipped.
 
+- **2026-06-14** First clean editor GUI open — launched via the explicit `D:\UE_5.6` path (registry workaround); reaches editor in ~25s, no errors, C++ classes + EOS SDK load. Empty default level; no project `Content/` yet.
+- **2026-06-14** Added progression (XP/level/unlocks) + breeding transaction (cost/cooldown) — the economy loop. Full suite: 23/23 green.
+- **2026-06-14** Added Phase 4 ranked arena core (rating + opponent selection + match orchestration) behind the `ULeaderboardService` interface. Full suite: 19/19 green.
 - **2026-06-14** Added Phase 3 deterministic battle sim + creature AI; determinism release gate passes. Full suite: 16/16 green.
 - **2026-06-14** Added Phase 2 Breeding + Mutation + Rarity (deterministic, seeded); 4 tests pass. Full suite: 12/12 green.
 - **2026-06-14** Added the Local Save subsystem (atomic write, versioned, migration hook); 3 save tests pass. Full suite: 8/8 green.

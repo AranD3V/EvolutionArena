@@ -1,0 +1,5 @@
+[
+	{ "Name": "Unlock_EvolutionBranchA", "RequiredLevel": 2 },
+	{ "Name": "Unlock_RareGenePool",     "RequiredLevel": 5 },
+	{ "Name": "Unlock_ApexSpecies",      "RequiredLevel": 10 }
+]
