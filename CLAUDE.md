@@ -137,7 +137,10 @@ loop, but always respect the planning docs that came before.
 # Build the editor target (Development, Win64)
 "<UE5>/Engine/Build/BatchFiles/Build.bat" EvolutionArenaEditor Win64 Development -project="EvolutionArena.uproject"
 
-# Run automation tests headless (includes the battle-determinism release gate)
+# Build + run the full automation suite with a CI pass/fail exit code (canonical)
+#   pwsh ./Scripts/RunTests.ps1 [-Engine <UE root>] [-SkipBuild] [-TestFilter EvolutionArena.Battle]
+
+# Run automation tests headless directly (includes the battle-determinism release gate)
 "<UE5>/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "EvolutionArena.uproject" -ExecCmds="Automation RunTests EvolutionArena; Quit" -unattended -nopause -nullrhi
 
 # Package an Android build (Development)

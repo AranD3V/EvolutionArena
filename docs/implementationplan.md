@@ -58,11 +58,14 @@ DataTables; protect battle determinism with tests from day one.
 - [ ] **EOS integration shell** — Online Subsystem EOS, login flow behind an interface.
   - *Depends on:* Project skeleton
   - *Acceptance:* Player can authenticate; identity available to game code.
-- [ ] **CI + determinism test harness** — automated build + a battle-repro test stub.
+- [~] **CI + determinism test harness** — automated build + a battle-repro test stub.
   - *Depends on:* Project skeleton
   - *Acceptance:* CI builds and runs automation tests green; the determinism repro
     test runs on **both Win64 and Android** with identical results (cross-architecture
     parity gate).
+  - *Done 2026-06-14:* `Scripts/RunTests.ps1` (build + headless suite + pass/fail exit;
+    verified 23/23 → exit 0) and `.github/workflows/ci.yml` (self-hosted UE5 runner).
+    **Pending:** the Android leg of the cross-architecture parity gate (needs a device).
 
 ### Phase 1 — Creature Core (M1)
 

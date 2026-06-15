@@ -1,0 +1,24 @@
+# Evolution Arena CI — build + headless automation tests (incl. the battle-determinism gate).
+#
+# REQUIRES a self-hosted Windows runner with Unreal Engine 5.6 installed, labeled `ue5`.
+# GitHub-hosted runners do NOT ship Unreal Engine, so this cannot run on them.
+# On the runner, set repository variable UE5_ROOT to the engine path (e.g. D:\UE_5.6).
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: [self-hosted, windows, ue5]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Build + run automation tests
+        shell: pwsh
+        run: ./Scripts/RunTests.ps1 -Engine "${{ vars.UE5_ROOT }}"

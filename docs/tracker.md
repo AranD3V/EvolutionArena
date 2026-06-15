@@ -23,6 +23,7 @@
 
 | Task | Status | Notes |
 |---|---|---|
+| M0 — CI / determinism harness | done (Win64) | `Scripts/RunTests.ps1` (build+suite+exit code; verified 23/23→0) + `.github/workflows/ci.yml`; Android parity leg pending device |
 | Phase 4 progression + Phase 2 breeding transaction | done | `UProgressionLibrary` (XP/level/unlocks) + `CanBreed`/`CommitBreed` (cost+cooldown); 4 tests **pass** |
 | Phase 1 — DataTables for parts & genes | partial | Row structs + seed JSON + `ValidateGenome` done; **pending** `.uasset` import in-editor + startup validation |
 | Phase 1 — Creature Assembly + Lab UI | todo | Editor-bound (UMG widgets) — needs an in-editor session; not headless-buildable |
@@ -30,25 +31,29 @@
 
 ## Next up
 
-- [ ] Phase 2 — Breeding transaction: cooldown gate (`FCreature::IsOffCooldown`) + currency cost (`FPlayerSave`) — unblocked, small C++
-- [ ] Phase 4 — Progression: player level/XP, evolution unlocks, currency sinks (touches `FPlayerSave`) — unblocked, headless
-- [ ] M0 — CI determinism harness (script around build + `Automation RunTests`) — unblocked (scriptable)
-- [ ] Phase 1 — Creature Assembly + Lab UI (live stat preview) — **editor-bound (UMG)**
-- [ ] Phase 1 — Import seed JSON → `DT_*` `.uasset`s + startup validation (editor step)
-- [ ] M0 — Windows packaging → runs to the hub — needs a startup map (editor)
-- [ ] M0 — Android packaging + device — blocked on device · EOS impl/shell — blocked on credentials
+> The headless C++ MVP logic is essentially complete (23/23 tests). What's left needs
+> the editor or external unblocks:
 
-> Note: deterministic gameplay core + ranked loop are built & tested headless —
-> genetics → breeding → mutation → rarity → battle → save → **ranked match/rating**
-> (19/19 tests, incl. the battle determinism gate). The **online boundary is now set**
-> (`ULeaderboardService`), so EOS drops in behind it later. Remaining unblocked CLI
-> work: breeding transaction, progression, a CI script. The rest is **editor-bound**
-> (Lab UI, asset import, packaging) or **blocked** (device, EOS creds).
+- [ ] **Editor session** — Lab/breeding/arena/leaderboard **UI** (UMG), import seed JSON
+  → `DT_*` `.uasset`s + wire startup validation, onboarding/tutorial, a startup map.
+  C++ scaffolding (widget base classes, GameMode/HUD) can be written headless to support this.
+- [ ] M0 — Windows packaging → runs to the hub (needs the startup map above)
+- [ ] EOS implementation of `ULeaderboardService` + auth/cloud-save — **blocked on credentials**
+- [ ] M0 — Android packaging + on-device perf + cross-arch determinism leg — **blocked on a device**
+- [ ] Analytics provider + events (PRD success metrics)
+- [ ] Balance/tuning pass on the MVP-default constants (rewards, cost, cooldown, rarity, rating)
+
+> Note: full deterministic gameplay + economy loop is built & tested headless —
+> genetics → breeding (cost/cooldown) → mutation → rarity → battle → ranked/rating →
+> XP/level/unlocks → save (23/23 tests, incl. the battle determinism gate + a CI harness).
+> The **online boundary is set** (`ULeaderboardService`), so EOS drops in behind it.
+> From here, meaningful progress is **editor-bound** or **blocked** (device, EOS creds).
 
 ## Done
 
 > Append completed tasks here (most recent first) so progress is visible.
 
+- [x] [2026-06-14] M0 — CI / determinism harness: `Scripts/RunTests.ps1` (build + headless automation suite + CI pass/fail exit code; verified locally 23/23 → exit 0) and `.github/workflows/ci.yml` (self-hosted UE5 Windows runner). Android cross-arch parity leg pending a device. Also added the harness command to CLAUDE.md §5.
 - [x] [2026-06-14] Phase 4 progression + Phase 2 breeding transaction: `UProgressionLibrary` (`Progression/`) — XP→level curve, ranked XP/coin rewards, data-driven level-gated unlocks (`FProgressionUnlockDef` + `Data/DT_Unlocks.json`); added `FPlayerSave.Xp`. `UBreedingLibrary::CanBreed`/`CommitBreed` — distinct/off-cooldown/affordable gate, deduct `BreedCost=50`, stamp `BreedCooldown=4h`, add offspring. Resolves the PRD breeding-cooldown question. 4 tests pass (Progression.XpAndLevel/Unlocks, Breeding.Transaction.CanBreed/Commit). Full suite 23/23.
 - [x] [2026-06-14] Phase 4 (core) — Ranked arena: `URankedArenaLibrary::RunRankedMatch` + `URankingLibrary` (integer Elo-like) + abstract `ULeaderboardService` (`SubmitResult`/`SelectOpponent`/`GetTopEntries`) + `ULocalLeaderboardService` (`Online/`). Added ranked fields to `FPlayerSave`. Online-behind-interface boundary established (EOS impl deferred). 3 tests pass: RatingDelta, OpponentSelection, RankedMatch. Full suite 19/19. Also: set `bUseUnity=false` (test helpers with shared names collided under unity).
 - [x] [2026-06-14] Phase 3 — Battle sim + Creature AI: `UBattleSimulator::SimulateBattle` + `UBattleAI::ChooseAction` + battle types (`Battle/`). Turn-based by Speed, integer damage, seeded `FRandomStream` Heavy-miss roll, `MaxRounds` cap, `FBattleResult` timeline (no render dep). Deterministic — **release gate test passes**. 4 tests pass: Determinism, StatsDecide, Termination, AIGoesForKill. Full suite 16/16.
@@ -156,6 +161,7 @@
 > Brief, dated summary of notable changes shipped.
 
 - **2026-06-14** First clean editor GUI open — launched via the explicit `D:\UE_5.6` path (registry workaround); reaches editor in ~25s, no errors, C++ classes + EOS SDK load. Empty default level; no project `Content/` yet.
+- **2026-06-14** Added the CI / determinism harness (`Scripts/RunTests.ps1` + GitHub Actions workflow); verified 23/23 → exit 0. Headless C++ MVP logic now complete.
 - **2026-06-14** Added progression (XP/level/unlocks) + breeding transaction (cost/cooldown) — the economy loop. Full suite: 23/23 green.
 - **2026-06-14** Added Phase 4 ranked arena core (rating + opponent selection + match orchestration) behind the `ULeaderboardService` interface. Full suite: 19/19 green.
 - **2026-06-14** Added Phase 3 deterministic battle sim + creature AI; determinism release gate passes. Full suite: 16/16 green.
